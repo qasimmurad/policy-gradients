@@ -9,6 +9,8 @@
  * components and client components can import it.
  */
 
+import { withBasePath } from "./basePath";
+
 export type RunSummary = {
   episodes: number;
   best_reward: number | null;
@@ -63,7 +65,8 @@ export type ChartPoint = {
 };
 
 export function runDataUrl(runName: string, file: string): string {
-  return `/data/runs/${encodeURIComponent(runName)}/${file}`;
+  // Next does not rewrite bare fetch strings, so the prefix is applied here.
+  return withBasePath(`/data/runs/${encodeURIComponent(runName)}/${file}`);
 }
 
 /**

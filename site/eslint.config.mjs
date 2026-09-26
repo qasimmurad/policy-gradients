@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // A local copy of the export, staged to preview the GitHub Pages
+    // sub-path build. Flat config does not read .gitignore, so it has to be
+    // named here or eslint walks into the compiled bundles.
+    ".pages-preview/**",
   ]),
 ]);
 

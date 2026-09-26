@@ -4,8 +4,25 @@
     {
       "name": "site",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "site", "run", "dev"],
+      "runtimeArgs": [
+        "--prefix",
+        "site",
+        "run",
+        "dev"
+      ],
       "port": 3000
+    },
+    {
+      "name": "pages-preview",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4173",
+        "-d",
+        "site/.pages-preview"
+      ],
+      "port": 4173
     }
   ]
 }

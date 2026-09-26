@@ -1,17 +1,33 @@
-name: Build
+name: Build and deploy
 
-# Vercel builds the site itself on every push. This workflow is the safety net:
-# it runs the tooling tests, checks that the run data committed under
-# site/public/data matches rl/runs, and builds the site the same way Vercel
-# does, so a broken commit is caught here rather than in a deploy.
+# One workflow, two jobs that matter.
+#
+# `verify` runs on every push and pull request. It tests the tooling, checks
+# that the run data committed under site/public/data matches rl/runs, and builds
+# the site at the domain root, which is how local development and a Vercel
+# deploy serve it.
+#
+# `build-pages` and `deploy` run only on main. They rebuild the site for the
+# GitHub Pages sub-path and publish it. The sub-path is not hardcoded: it comes
+# from actions/configure-pages, so renaming the repository does not break the
+# deploy, and a user site with no sub-path produces an empty prefix that
+# next.config.ts correctly ignores.
 on:
   push:
     branches: [main]
   pull_request:
   workflow_dispatch:
 
+# Only the deploy job needs anything beyond reading the repository.
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
-  build:
+  verify:
     runs-on: ubuntu-latest
 
     steps:
@@ -58,6 +74,69 @@ jobs:
         run: npm run lint
         working-directory: site
 
-      - name: Build
+      # Built with no base path, which is what dev and a root deploy use. This
+      # keeps the root configuration honest even though Pages serves a sub-path.
+      - name: Build for the domain root
         run: npm run build
         working-directory: site
+
+  build-pages:
+    if: github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      # Reports where Pages will serve this repository, for example
+      # "/policy-gradients" for a project site or "" for a user site.
+      - name: Read the Pages base path
+        id: pages
+        uses: actions/configure-pages@v6
+
+      - name: Install site dependencies
+        run: npm ci
+        working-directory: site
+
+      # prebuild runs the sync script, so the published site always carries the
+      # run data committed in this revision. postbuild writes out/.nojekyll,
+      # without which Pages would drop every underscore prefixed path: all of
+      # _next/ and the _synthetic-example run.
+      - name: Build for the Pages base path
+        run: npm run build
+        working-directory: site
+        env:
+          NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+
+      - name: Upload the static export
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: site/out
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: build-pages
+    runs-on: ubuntu-latest
+
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

@@ -1,6 +1,8 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
+import { withBasePath } from "@/lib/basePath";
+
 /**
  * Renders a markdown string for the log and the write-up.
  *
@@ -47,8 +49,17 @@ export function Markdown({ children }: { children: string }) {
             </td>
           ),
           // A plain img, because the static export has no image optimiser.
-          // eslint-disable-next-line @next/next/no-img-element
-          img: ({ src, alt }) => <img src={typeof src === "string" ? src : ""} alt={alt ?? ""} />,
+          // Markdown is authored with root relative paths such as
+          // /log-images/reward.png, and nothing rewrites those for us, so the
+          // base path is applied here.
+          img: ({ src, alt }) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={withBasePath(typeof src === "string" ? src : "")} alt={alt ?? ""} />
+          ),
+          // Same reasoning for a link written to another page of this site.
+          a: ({ href, children: label }) => (
+            <a href={withBasePath(typeof href === "string" ? href : "")}>{label}</a>
+          ),
         }}
       >
         {children}

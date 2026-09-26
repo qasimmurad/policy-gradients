@@ -121,8 +121,47 @@ makes the demo trustworthy.
 
 ## Deployment
 
-Vercel, with the project root directory set to `site`. `npm run build` triggers
-`prebuild`, which runs the sync script. If Python is unavailable in the build
-environment the sync is skipped with a warning and the build uses the copy of
-the run data already committed in `site/public/data`, so a deploy never fails
-over it.
+The site is published to GitHub Pages at
+**https://qasimmurad.github.io/policy-gradients/** by the `Build and deploy`
+workflow, on every push to `main`. Nothing needs to be run by hand.
+
+Pages serves a project site from a sub-path rather than the domain root, so the
+app has to know its own prefix. It reads it from `NEXT_PUBLIC_BASE_PATH`, which
+the workflow fills in from `actions/configure-pages`, so the prefix follows the
+repository name instead of being hardcoded. `next.config.ts` turns that into
+Next's `basePath`, which is enough for `next/link` and every `_next` asset.
+Three things Next does not rewrite are handled in `site/lib/basePath.ts`:
+
+- `runDataUrl` in `site/lib/runs.ts`, because the demo and the runs page hand a
+  bare string to `fetch`.
+- Image and link paths authored inside markdown, applied in
+  `site/components/Markdown.tsx`.
+- Because the prefix is compiled into the bundle, changing it needs a rebuild
+  rather than a redeploy.
+
+The `postbuild` script writes `out/.nojekyll`. Without it Pages runs the export
+through Jekyll, which discards every path beginning with an underscore, meaning
+all of `_next/` and the `_synthetic-example` run. Next does not copy dotfiles
+out of `public/`, which is why it is written after the export rather than
+committed.
+
+To check a Pages style build locally, build with the prefix, stage it under a
+folder of that name, and serve the parent:
+
+```bash
+cd site
+NEXT_PUBLIC_BASE_PATH=/policy-gradients npm run build
+rm -rf .pages-preview && mkdir -p .pages-preview/policy-gradients
+cp -R out/. .pages-preview/policy-gradients/
+python3 -m http.server 4173 -d .pages-preview
+```
+
+Then open http://localhost:4173/policy-gradients/. Plain `npm run dev` still
+serves at the root, unprefixed, which is the normal way to work.
+
+### Vercel
+
+Vercel still works and needs no base path, since it serves from the domain
+root. Set the project root directory to `site` and leave
+`NEXT_PUBLIC_BASE_PATH` unset. The `verify` job builds the site this way on
+every push, so the root configuration cannot quietly rot.

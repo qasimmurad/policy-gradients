@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local preview of the GitHub Pages sub-path build
+/.pages-preview/
