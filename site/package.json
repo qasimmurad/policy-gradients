@@ -10,7 +10,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "postbuild": "node -e \"require('fs').writeFileSync('out/.nojekyll','')\""
+    "postbuild": "node -e \"require('fs').writeFileSync('out/.nojekyll','')\"",
+    "preview:pages": "NEXT_PUBLIC_BASE_PATH=/policy-gradients npm run build && rm -rf .pages-preview && mkdir -p .pages-preview/policy-gradients && cp -R out/. .pages-preview/policy-gradients/ && python3 -m http.server 4173 -d .pages-preview"
   },
   "dependencies": {
     "gray-matter": "4.0.3",

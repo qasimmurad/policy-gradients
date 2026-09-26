@@ -68,6 +68,14 @@ export function RunExplorer({
 
       fetch(runDataUrl(name, "metrics.jsonl"))
         .then(async (response) => {
+          if (response.status === 404) {
+            // Pages caches HTML for ten minutes, so a visitor can be holding a
+            // run list that the current publish no longer has. That is a stale
+            // page, not a broken site.
+            throw new Error(
+              "This run is no longer published. Reload the page for the current list.",
+            );
+          }
           if (!response.ok) throw new Error(`metrics.jsonl returned ${response.status}`);
           return response.text();
         })

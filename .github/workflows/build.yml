@@ -85,6 +85,16 @@ jobs:
     needs: verify
     runs-on: ubuntu-latest
 
+    # configure-pages reads GET /repos/{owner}/{repo}/pages to find the base
+    # path. That succeeds today on the workflow-level contents: read because
+    # this repository is public, so this block is insurance rather than a fix:
+    # it keeps the step working if the repository is ever made private. A
+    # job-level block zeroes every scope it omits, so contents: read has to be
+    # repeated here for checkout.
+    permissions:
+      contents: read
+      pages: read
+
     steps:
       - uses: actions/checkout@v5
 

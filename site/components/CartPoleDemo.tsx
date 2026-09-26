@@ -115,6 +115,13 @@ export function CartPoleDemo({ runs }: { runs: DemoRun[] }) {
 
     fetch(runDataUrl(run, "policy.json"))
       .then(async (response) => {
+        if (response.status === 404) {
+          // As on the runs page: a cached page can name a run that the current
+          // publish has dropped.
+          throw new Error(
+            "this run is no longer published, reload the page for the current list",
+          );
+        }
         if (!response.ok) throw new Error(`policy.json returned ${response.status}`);
         return response.json();
       })

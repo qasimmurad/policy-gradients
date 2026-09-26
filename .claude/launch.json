@@ -14,13 +14,12 @@
     },
     {
       "name": "pages-preview",
-      "runtimeExecutable": "python3",
+      "runtimeExecutable": "npm",
       "runtimeArgs": [
-        "-m",
-        "http.server",
-        "4173",
-        "-d",
-        "site/.pages-preview"
+        "--prefix",
+        "site",
+        "run",
+        "preview:pages"
       ],
       "port": 4173
     }

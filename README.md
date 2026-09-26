@@ -32,7 +32,7 @@ rl/
       metrics.jsonl  One JSON object per episode.
       policy.json    Exported weights, written at the end of a run.
       notes.md       Optional freeform notes.
-site/              Next.js app, deployed to Vercel as a static export.
+site/              Next.js app, built as a static export.
   public/data/     Run data copied here by the sync script. Generated, committed.
   content/log/     Experiment log entries, named YYYY-MM-DD-slug.md.
   content/writeup.md
@@ -93,6 +93,7 @@ npm run dev
 | `npm run dev` (in `site/`) | Development server on port 3000. |
 | `npm run sync` (in `site/`) | The sync script, also run automatically before a build. |
 | `npm run build` (in `site/`) | Static export into `site/out/`. |
+| `npm run preview:pages` (in `site/`) | Builds and serves the GitHub Pages sub-path build on port 4173. |
 | `npm run typecheck` and `npm run lint` (in `site/`) | What continuous integration checks. |
 
 Syncing is deterministic. The same runs always produce the same `index.json`, so
@@ -125,6 +126,10 @@ The site is published to GitHub Pages at
 **https://qasimmurad.github.io/policy-gradients/** by the `Build and deploy`
 workflow, on every push to `main`. Nothing needs to be run by hand.
 
+Pages serves every response with `Cache-Control: max-age=600`, so a push can
+take up to ten minutes to show up for somebody who already had the page open. A
+green workflow and an apparently unchanged site is usually just that.
+
 Pages serves a project site from a sub-path rather than the domain root, so the
 app has to know its own prefix. It reads it from `NEXT_PUBLIC_BASE_PATH`, which
 the workflow fills in from `actions/configure-pages`, so the prefix follows the
@@ -145,19 +150,22 @@ all of `_next/` and the `_synthetic-example` run. Next does not copy dotfiles
 out of `public/`, which is why it is written after the export rather than
 committed.
 
-To check a Pages style build locally, build with the prefix, stage it under a
-folder of that name, and serve the parent:
+To check a Pages style build locally, which is the only way to exercise the
+sub-path layout before it is published:
 
 ```bash
 cd site
-NEXT_PUBLIC_BASE_PATH=/policy-gradients npm run build
-rm -rf .pages-preview && mkdir -p .pages-preview/policy-gradients
-cp -R out/. .pages-preview/policy-gradients/
-python3 -m http.server 4173 -d .pages-preview
+npm run preview:pages
 ```
 
-Then open http://localhost:4173/policy-gradients/. Plain `npm run dev` still
-serves at the root, unprefixed, which is the normal way to work.
+That builds with the prefix, stages the export under a folder of that name and
+serves the parent, so http://localhost:4173/policy-gradients/ behaves the way
+the deployed site does. It leaves `site/out` holding a prefixed build, so run
+`npm run build` again before serving `out/` at a domain root, or every asset
+will 404 and the page will come up unstyled.
+
+Plain `npm run dev` still serves at the root, unprefixed, which is the normal
+way to work day to day.
 
 ### Vercel
 
