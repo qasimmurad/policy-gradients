@@ -1,0 +1,63 @@
+name: Build
+
+# Vercel builds the site itself on every push. This workflow is the safety net:
+# it runs the tooling tests, checks that the run data committed under
+# site/public/data matches rl/runs, and builds the site the same way Vercel
+# does, so a broken commit is caught here rather than in a deploy.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      # No pip install. The logger and the sync script are standard library
+      # only, and the torch test skips itself when torch is absent.
+      - name: Test the tooling
+        run: python3 -m unittest discover -s rl/tools -p "test_*.py"
+
+      - name: Install site dependencies
+        run: npm ci
+        working-directory: site
+
+      - name: Sync run data into the site
+        run: npm run sync
+        working-directory: site
+
+      # Syncing is deterministic, so a diff here means a run was committed
+      # without running the sync script.
+      - name: Check the committed run data is up to date
+        run: |
+          if ! git diff --quiet -- site/public/data; then
+            echo "site/public/data is out of date. Run 'npm run sync' in site/ and commit the result."
+            git diff --stat -- site/public/data
+            exit 1
+          fi
+
+      - name: Typecheck
+        run: npm run typecheck
+        working-directory: site
+
+      - name: Lint
+        run: npm run lint
+        working-directory: site
+
+      - name: Build
+        run: npm run build
+        working-directory: site
