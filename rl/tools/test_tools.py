@@ -203,6 +203,25 @@ class TestSyncRewardColumns(unittest.TestCase):
             self.assertFalse(entry["columns"]["proxy_reward"])
             self.assertIsNone(entry["summary"]["mean_true_last_50"])
 
+    def test_summary_floats_are_rounded_so_the_index_does_not_depend_on_python(self):
+        """Python 3.12 sums floats more accurately than 3.9, which would otherwise
+        make the committed index.json differ by interpreter."""
+        with tempfile.TemporaryDirectory() as tmp:
+            runs_dir = Path(tmp) / "runs"
+            with RunLogger("drift", {"env": "gridworld"}, runs_dir=runs_dir) as logger:
+                for episode in range(60):
+                    logger.log(episode, reward=0.1, loss=0.1, proxy_reward=0.1,
+                               true_reward=0.1)
+            summary = sync(runs_dir=runs_dir, data_dir=Path(tmp) / "data", quiet=True)[
+                "runs"
+            ][0]["summary"]
+
+            for key, value in summary.items():
+                if isinstance(value, float):
+                    self.assertEqual(
+                        value, round(value, 6), f"{key} was written unrounded"
+                    )
+
     def test_a_baseline_is_flagged_so_the_home_page_can_skip_it(self):
         with tempfile.TemporaryDirectory() as tmp:
             runs_dir = Path(tmp) / "runs"

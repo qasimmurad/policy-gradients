@@ -37,6 +37,14 @@ RECENT_EPISODES = 50
 # Optional per episode columns the site knows how to chart.
 REWARD_COLUMNS = ("true_reward", "proxy_reward")
 
+# Summary floats are rounded to this many places before they are written.
+# Python 3.12 changed sum() to use compensated summation, so the same metrics
+# summarised under 3.9 and under 3.12 differ in the last couple of bits and the
+# committed index.json would depend on whichever interpreter happened to run
+# the sync. These are numbers a website displays to one or two decimals, so
+# rounding costs nothing and makes the output portable.
+SUMMARY_DECIMALS = 6
+
 
 def _read_config(run_dir: Path) -> dict[str, Any]:
     path = run_dir / "config.json"
@@ -104,10 +112,15 @@ def _peak_moving_average(values: list[float], window: int) -> Optional[float]:
     return peak
 
 
+def _rounded(value: Optional[float]) -> Optional[float]:
+    """Round a summary float, or pass None through. See SUMMARY_DECIMALS."""
+    return None if value is None else round(value, SUMMARY_DECIMALS)
+
+
 def _mean_of_last(records: list[dict[str, Any]], key: str) -> Optional[float]:
     """Mean of a column over the final episodes, or None if the column is absent."""
     values = _numbers(records, key)[-RECENT_EPISODES:]
-    return (sum(values) / len(values)) if values else None
+    return _rounded(sum(values) / len(values)) if values else None
 
 
 def _summarise(records: list[dict[str, Any]]) -> dict[str, Any]:
@@ -118,13 +131,15 @@ def _summarise(records: list[dict[str, Any]]) -> dict[str, Any]:
         "mean_true_last_50": _mean_of_last(records, "true_reward"),
         "mean_proxy_last_50": _mean_of_last(records, "proxy_reward"),
         "episodes": len(records),
-        "best_reward": max(rewards) if rewards else None,
-        "final_reward": rewards[-1] if rewards else None,
-        "mean_reward": (sum(rewards) / len(rewards)) if rewards else None,
-        "mean_last_50": (sum(recent) / len(recent)) if recent else None,
-        "peak_moving_average": _peak_moving_average(rewards, MOVING_AVERAGE_WINDOW),
+        "best_reward": _rounded(max(rewards)) if rewards else None,
+        "final_reward": _rounded(rewards[-1]) if rewards else None,
+        "mean_reward": _rounded(sum(rewards) / len(rewards)) if rewards else None,
+        "mean_last_50": _rounded(sum(recent) / len(recent)) if recent else None,
+        "peak_moving_average": _rounded(
+            _peak_moving_average(rewards, MOVING_AVERAGE_WINDOW)
+        ),
         "moving_average_window": MOVING_AVERAGE_WINDOW,
-        "final_loss": losses[-1] if losses else None,
+        "final_loss": _rounded(losses[-1]) if losses else None,
         "has_loss": bool(losses),
     }
 
