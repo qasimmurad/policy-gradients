@@ -34,6 +34,9 @@ COPIED_FILES = ("config.json", "metrics.jsonl", "policy.json", "notes.md")
 MOVING_AVERAGE_WINDOW = 20
 RECENT_EPISODES = 50
 
+# Optional per episode columns the site knows how to chart.
+REWARD_COLUMNS = ("true_reward", "proxy_reward")
+
 
 def _read_config(run_dir: Path) -> dict[str, Any]:
     path = run_dir / "config.json"
@@ -101,11 +104,19 @@ def _peak_moving_average(values: list[float], window: int) -> Optional[float]:
     return peak
 
 
+def _mean_of_last(records: list[dict[str, Any]], key: str) -> Optional[float]:
+    """Mean of a column over the final episodes, or None if the column is absent."""
+    values = _numbers(records, key)[-RECENT_EPISODES:]
+    return (sum(values) / len(values)) if values else None
+
+
 def _summarise(records: list[dict[str, Any]]) -> dict[str, Any]:
     rewards = _numbers(records, "reward")
     losses = _numbers(records, "loss")
     recent = rewards[-RECENT_EPISODES:]
     return {
+        "mean_true_last_50": _mean_of_last(records, "true_reward"),
+        "mean_proxy_last_50": _mean_of_last(records, "proxy_reward"),
         "episodes": len(records),
         "best_reward": max(rewards) if rewards else None,
         "final_reward": rewards[-1] if rewards else None,
@@ -132,6 +143,15 @@ def _last_timestamp(records: list[dict[str, Any]]) -> Optional[str]:
         if isinstance(timestamp, str):
             return timestamp
     return None
+
+
+def _columns(records: list[dict[str, Any]]) -> dict[str, bool]:
+    """Which optional reward columns this run actually logged.
+
+    The runs page draws proxy against true only when both are present, so it
+    needs to know before it fetches anything.
+    """
+    return {name: bool(_numbers(records, name)) for name in REWARD_COLUMNS}
 
 
 def _is_run_dir(path: Path) -> bool:
@@ -176,7 +196,10 @@ def sync(runs_dir: Path = RUNS_DIR, data_dir: Path = DATA_DIR, quiet: bool = Fal
             {
                 "name": run_dir.name,
                 "synthetic": bool(config.get("synthetic", False)),
+                "baseline": bool(config.get("baseline", False)),
                 "env": config.get("env"),
+                "reward_mode": config.get("reward_mode"),
+                "columns": _columns(records),
                 "config": config,
                 "last_episode": _last_episode(records),
                 "updated_at": _last_timestamp(records),

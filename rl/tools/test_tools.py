@@ -75,6 +75,25 @@ class TestRunLogger(unittest.TestCase):
             record = json.loads((Path(tmp) / "kl-run" / "metrics.jsonl").read_text().strip())
             self.assertAlmostEqual(record["kl"], 0.013)
 
+    def test_records_the_phase_two_metrics(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with RunLogger("grid", {"env": "gridworld"}, runs_dir=Path(tmp)) as logger:
+                logger.log(
+                    0,
+                    reward=2.58,
+                    loss=0.1,
+                    true_reward=0.0,
+                    proxy_reward=2.58,
+                    episode_length=50,
+                )
+            record = json.loads((Path(tmp) / "grid" / "metrics.jsonl").read_text().strip())
+            self.assertEqual(record["true_reward"], 0.0)
+            self.assertAlmostEqual(record["proxy_reward"], 2.58)
+            self.assertEqual(record["episode_length"], 50)
+            # The required fields are still there and still named the same.
+            self.assertEqual(record["episode"], 0)
+            self.assertAlmostEqual(record["reward"], 2.58)
+
     def test_rejects_a_path_as_a_run_name(self):
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaises(ValueError):
@@ -143,6 +162,58 @@ class TestSync(unittest.TestCase):
                 handle.write('{"episode": 4, "rewa')
             index = sync(runs_dir=runs_dir, data_dir=Path(tmp) / "data", quiet=True)
             self.assertEqual(index["runs"][0]["summary"]["episodes"], 4)
+
+
+class TestSyncRewardColumns(unittest.TestCase):
+    """What the site needs in order to pick a chart."""
+
+    def _gridworld_run(self, runs_dir: Path, name: str, mode: str) -> None:
+        config = {"env": "gridworld", "reward_mode": mode, "algorithm": "REINFORCE"}
+        with RunLogger(name, config, runs_dir=runs_dir) as logger:
+            for episode in range(4):
+                logger.log(
+                    episode,
+                    reward=0.5 * episode,
+                    loss=0.1,
+                    true_reward=0.0,
+                    proxy_reward=0.5 * episode,
+                    episode_length=50,
+                )
+
+    def test_a_gridworld_run_declares_both_reward_columns(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            runs_dir = Path(tmp) / "runs"
+            self._gridworld_run(runs_dir, "grid-proxy", "proxy")
+            entry = sync(runs_dir=runs_dir, data_dir=Path(tmp) / "data", quiet=True)["runs"][0]
+
+            self.assertEqual(entry["reward_mode"], "proxy")
+            self.assertTrue(entry["columns"]["true_reward"])
+            self.assertTrue(entry["columns"]["proxy_reward"])
+            self.assertEqual(entry["summary"]["mean_true_last_50"], 0.0)
+            self.assertAlmostEqual(entry["summary"]["mean_proxy_last_50"], 0.75)
+
+    def test_a_cartpole_run_declares_neither(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            runs_dir = Path(tmp) / "runs"
+            fake_run(runs_dir, "cartpole-v1", 4)
+            entry = sync(runs_dir=runs_dir, data_dir=Path(tmp) / "data", quiet=True)["runs"][0]
+
+            self.assertIsNone(entry["reward_mode"])
+            self.assertFalse(entry["columns"]["true_reward"])
+            self.assertFalse(entry["columns"]["proxy_reward"])
+            self.assertIsNone(entry["summary"]["mean_true_last_50"])
+
+    def test_a_baseline_is_flagged_so_the_home_page_can_skip_it(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            runs_dir = Path(tmp) / "runs"
+            fake_run(runs_dir, "cartpole-random", 4, baseline=True, algorithm="random")
+            fake_run(runs_dir, "cartpole-v1", 4)
+            by_name = {
+                run["name"]: run
+                for run in sync(runs_dir=runs_dir, data_dir=Path(tmp) / "data", quiet=True)["runs"]
+            }
+            self.assertTrue(by_name["cartpole-random"]["baseline"])
+            self.assertFalse(by_name["cartpole-v1"]["baseline"])
 
 
 @unittest.skipUnless(HAS_TORCH, "torch is not installed")

@@ -113,7 +113,11 @@ class RunLogger:
             reward: Total undiscounted reward for the episode.
             loss: Policy loss for the update, or None if there was not one.
             **extra: Any additional scalars to record alongside the required
-                fields, for example `entropy=0.61` or `kl=0.02`.
+                fields. The training loop passes `episode_length` always, and
+                `true_reward` and `proxy_reward` wherever the environment
+                reports both, which is what lets the runs page plot a proxy
+                against the truth. Anything else is recorded just as happily,
+                for example `entropy=0.61` or `kl=0.02`.
         """
         if self._closed:
             raise RuntimeError("RunLogger is closed, create a new one to keep logging")
