@@ -7,6 +7,40 @@ the code there is a public website with a live in-browser demo of the trained
 agent, training curves from real runs, a dated experiment log, and the written
 report.
 
+## Reproduce the current results
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+
+# Random baselines. These work today.
+python rl/agent/reinforce.py --env cartpole  --agent random --episodes 500
+python rl/agent/reinforce.py --env gridworld --agent random --episodes 300
+
+# Training runs. These raise NotImplementedError until the bodies in
+# rl/agent/reinforce.py are written.
+python rl/agent/reinforce.py --env cartpole --episodes 500 --run-name cartpole-v1
+python rl/agent/reinforce.py --env gridworld --reward true  --episodes 300 --run-name grid-true
+python rl/agent/reinforce.py --env gridworld --reward proxy --episodes 300 --run-name grid-proxy
+
+python rl/tools/sync.py
+```
+
+What each run should produce. Baseline figures are measured, on an Apple M3
+Pro. The training rows are deliberately empty rather than guessed, and get
+filled in once the runs have actually happened.
+
+| Run | What it produces | Time |
+| --- | --- | --- |
+| `cartpole-random` | Mean reward 22.2 over 500 episodes, best 106. | Under a second |
+| `gridworld-random` | Reaches the goal in 97 of 300 episodes. Mean true reward 0.32, mean proxy reward 2.16. | Under a second |
+| `cartpole-v1` | **Awaiting Qasim's numbers.** | **Awaiting** |
+| `grid-true` | **Awaiting Qasim's numbers.** Should push the goal rate well above the random 97 in 300. | **Awaiting** |
+| `grid-proxy` | **Awaiting Qasim's numbers.** The result to look for is proxy reward climbing above the random 2.16 while true reward falls towards zero. | **Awaiting** |
+
+Running `sync.py` copies the runs into the site. `cd site && npm run dev` then
+serves it at http://localhost:3000.
+
 ## Division of labour
 
 This matters more than anything else in this file.
@@ -16,16 +50,28 @@ policy network, the loss and the update rule live in `rl/agent/` and are written
 by hand, because every line has to be explainable in an interview. Nothing and
 nobody else writes in that directory.
 
-**Everything else is support.** The helpers in `rl/tools/` and the website in
-`site/` exist to make the agent's results visible. They read what training
-produces and never take part in producing it.
+**Everything else is support.** The environments in `rl/envs/`, the helpers in
+`rl/tools/` and the website in `site/` exist to set up the experiments and make
+their results visible. They read what training produces and never take part in
+producing it.
+
+To say it plainly, because it matters for how this work should be read: the
+learning algorithm in `rl/agent/` was written by hand, and the environments,
+tooling and site were built with AI assistance. The professor approved that
+split explicitly. The boundary is checkable rather than a promise, because
+nothing inside `rl/agent/` is anything but Qasim's code, and the support
+functions that the training script leans on live in `rl/envs/` and `rl/tools/`
+for exactly that reason.
 
 ## Layout
 
 ```
 rl/
   agent/           REINFORCE, policy network, training loop. Qasim writes this.
-  tools/           Logging, weight export, run sync. Support code.
+    reinforce.py     Signatures and docstrings in place, bodies left to him.
+  envs/            CartPole comes from Gymnasium, the gridworld is ours.
+    gridworld.py     5 by 5 grid with a true reward and a farmable proxy reward.
+  tools/           Logging, weight export, run sync, random baseline. Support code.
   runs/            Output, one folder per run, committed so the site can read it.
     <run-name>/
       config.json    Hyperparameters and environment name.
@@ -88,6 +134,7 @@ npm run dev
 | Command | What it does |
 | --- | --- |
 | `python3 -m unittest discover -s rl/tools -p "test_*.py"` | Tests the tooling. The torch test is skipped if torch is missing. |
+| `python3 -m unittest discover -s rl/envs -p "test_*.py"` | Tests the gridworld, including that its proxy reward is still farmable. |
 | `python3 rl/tools/sync.py` | Copies runs into the site and rebuilds `index.json`. |
 | `npm run dev` (in `site/`) | Development server on port 3000. |
 | `npm run sync` (in `site/`) | The sync script, also run automatically before a build. |
