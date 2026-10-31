@@ -19,16 +19,13 @@ export function Nav() {
   const current = pathname.replace(/\/+$/, "") || "/";
 
   return (
-    <header className="sticky top-0 z-10 border-b border-zinc-200 bg-white/85 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/85">
-      <div className="mx-auto flex w-full max-w-4xl flex-wrap items-center gap-x-6 gap-y-2 px-5 py-3 sm:px-8">
-        <Link
-          href="/"
-          className="mr-auto text-sm font-semibold tracking-tight hover:text-indigo-600 dark:hover:text-indigo-400"
-        >
+    <header className="border-b border-rule">
+      <div className="mx-auto flex w-full max-w-3xl flex-wrap items-baseline gap-x-6 gap-y-2 px-5 py-5 sm:px-8">
+        <Link href="/" className="mr-auto font-serif text-base font-semibold">
           Policy gradients from scratch
         </Link>
 
-        <nav aria-label="Main" className="-mx-1 flex items-center gap-1 overflow-x-auto">
+        <nav aria-label="Main" className="-mx-1.5 flex items-baseline gap-1 overflow-x-auto">
           {LINKS.map((link) => {
             const active =
               link.href === "/" ? current === "/" : current.startsWith(link.href);
@@ -38,10 +35,10 @@ export function Nav() {
                 href={link.href}
                 aria-current={active ? "page" : undefined}
                 className={[
-                  "rounded-md px-2.5 py-1.5 text-sm whitespace-nowrap transition-colors",
+                  "px-1.5 py-1 text-sm whitespace-nowrap transition-colors",
                   active
-                    ? "bg-zinc-100 font-medium text-zinc-900 dark:bg-zinc-800 dark:text-zinc-50"
-                    : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100",
+                    ? "text-ink underline decoration-1 underline-offset-[6px]"
+                    : "text-muted hover:text-ink",
                 ].join(" ")}
               >
                 {link.label}

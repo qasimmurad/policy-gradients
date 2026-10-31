@@ -283,7 +283,7 @@ export function CartPoleDemo({ runs }: { runs: DemoRun[] }) {
   return (
     <div>
       {!hasRuns ? (
-        <p className="mb-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+        <p className="notice notice-proxy mb-8 text-sm">
           No run has exported weights yet, so this is a random agent. The trained
           policy will appear here after the first run finishes and{" "}
           <code className="font-mono">export_policy</code> writes its{" "}
@@ -292,13 +292,13 @@ export function CartPoleDemo({ runs }: { runs: DemoRun[] }) {
       ) : null}
 
       {policyError ? (
-        <p className="mb-6 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
+        <p className="notice notice-proxy mb-8 text-sm">
           Could not load the weights for this run: {policyError}. Falling back to
           the random agent.
         </p>
       ) : null}
 
-      <div className="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
+      <div className="overflow-hidden rounded-xl border border-rule">
         <canvas
           ref={canvasRef}
           className="block h-56 w-full sm:h-72"
@@ -313,7 +313,7 @@ export function CartPoleDemo({ runs }: { runs: DemoRun[] }) {
         <Stat label="best" value={display.bestSteps} />
         <Stat label="episodes" value={display.episodes} />
         {display.endReason ? (
-          <span className="text-zinc-500 dark:text-zinc-400">{display.endReason}</span>
+          <span className="text-muted">{display.endReason}</span>
         ) : null}
       </div>
 
@@ -321,21 +321,21 @@ export function CartPoleDemo({ runs }: { runs: DemoRun[] }) {
         <button
           type="button"
           onClick={() => setRunning((value) => !value)}
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+          className="rounded-lg bg-ink px-4 py-2 text-sm font-medium text-paper transition-opacity hover:opacity-80"
         >
           {running ? "Pause" : "Play"}
         </button>
         <button
           type="button"
           onClick={reset}
-          className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+          className="rounded-lg border border-rule px-4 py-2 text-sm font-medium transition-colors hover:bg-ink/5"
         >
           Reset
         </button>
         <button
           type="button"
           onClick={resetAll}
-          className="rounded-lg px-3 py-2 text-sm text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+          className="rounded-lg px-3 py-2 text-sm text-muted hover:bg-ink/5"
         >
           Clear counters
         </button>
@@ -347,13 +347,13 @@ export function CartPoleDemo({ runs }: { runs: DemoRun[] }) {
 
           {hasRuns ? (
             <label className="mb-3 block">
-              <span className="mb-1 block text-xs text-zinc-500 dark:text-zinc-400">
+              <span className="mb-1 block text-xs text-muted">
                 Run
               </span>
               <select
                 value={selectedRun ?? ""}
                 onChange={(event) => setSelectedRun(event.target.value)}
-                className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+                className="w-full rounded-lg border border-rule bg-paper px-3 py-2 text-sm"
               >
                 {runs.map((run) => (
                   <option key={run.name} value={run.name}>
@@ -375,8 +375,8 @@ export function CartPoleDemo({ runs }: { runs: DemoRun[] }) {
                 className={[
                   "rounded-lg border px-3 py-1.5 text-sm transition-colors",
                   mode === option && !agentIsRandom
-                    ? "border-indigo-600 bg-indigo-600 text-white dark:border-indigo-500 dark:bg-indigo-500"
-                    : "border-zinc-300 hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800",
+                    ? "border-ink bg-ink text-paper"
+                    : "border-rule hover:bg-ink/5",
                   agentIsRandom ? "cursor-not-allowed opacity-40" : "",
                 ].join(" ")}
               >
@@ -391,12 +391,12 @@ export function CartPoleDemo({ runs }: { runs: DemoRun[] }) {
               checked={agentIsRandom}
               disabled={policy === null}
               onChange={(event) => setPreferRandomAgent(event.target.checked)}
-              className="size-4 accent-indigo-600 disabled:opacity-40"
+              className="size-4 accent-ink disabled:opacity-40"
             />
             Random agent
           </label>
 
-          <p className="mt-2 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
+          <p className="mt-2 text-xs leading-relaxed text-muted">
             {agentIsRandom
               ? "Actions are coin flips. Expect the pole to fall in roughly twenty steps."
               : mode === "sample"
@@ -413,20 +413,20 @@ export function CartPoleDemo({ runs }: { runs: DemoRun[] }) {
               <ProbabilityBar label="push right" value={display.probabilities[1] ?? 0} />
             </div>
           ) : (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm text-muted">
               The random agent has no policy to read. Turn it off to watch the
               network decide.
             </p>
           )}
 
           {policy ? (
-            <p className="mt-4 text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="mt-4 text-xs text-muted">
               {policy.env}, layers {describePolicy(policy)}, {policy.activation}{" "}
               between layers and softmax on the output.
             </p>
           ) : null}
 
-          <dl className="tabular mt-4 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
+          <dl className="tabular mt-4 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted">
             <Observation label="cart position" value={display.state.x} />
             <Observation label="cart velocity" value={display.state.xDot} />
             <Observation label="pole angle" value={display.state.theta} />
@@ -454,7 +454,7 @@ function Stat({ label, value }: { label: string; value: number | string }) {
   return (
     <span className="flex items-baseline gap-1.5">
       <span className="tabular text-lg font-semibold">{value}</span>
-      <span className="text-xs text-zinc-500 dark:text-zinc-400">{label}</span>
+      <span className="text-xs text-muted">{label}</span>
     </span>
   );
 }
@@ -471,13 +471,13 @@ function Observation({ label, value }: { label: string; value: number }) {
 function ProbabilityBar({ label, value }: { label: string; value: number }) {
   return (
     <div>
-      <div className="mb-1 flex justify-between text-xs text-zinc-500 dark:text-zinc-400">
+      <div className="mb-1 flex justify-between text-xs text-muted">
         <span>{label}</span>
         <span className="tabular font-mono">{(value * 100).toFixed(1)}%</span>
       </div>
-      <div className="h-1.5 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+      <div className="h-1 overflow-hidden bg-ink/12">
         <div
-          className="h-full rounded-full bg-indigo-600 dark:bg-indigo-500"
+          className="h-full bg-ink"
           style={{ width: `${Math.max(0, Math.min(1, value)) * 100}%` }}
         />
       </div>
@@ -508,22 +508,24 @@ function draw(
   const colors =
     theme === "dark"
       ? {
-          background: "#18181b",
-          track: "#3f3f46",
-          limit: "#52525b",
-          cart: "#e4e4e7",
-          pole: "#818cf8",
-          axle: "#27272a",
-          failed: "#f87171",
+          background: "#1d1a17",
+          track: "#2e2a26",
+          limit: "#4a443d",
+          cart: "#ece8e1",
+          pole: "#ece8e1",
+          axle: "#1d1a17",
+          // Greys out rather than turning red, because red is not in the
+          // palette and the two colours here already mean something else.
+          failed: "#4a443d",
         }
       : {
-          background: "#fafafa",
-          track: "#d4d4d8",
-          limit: "#a1a1aa",
-          cart: "#3f3f46",
-          pole: "#4f46e5",
-          axle: "#fafafa",
-          failed: "#dc2626",
+          background: "#f4f2ed",
+          track: "#e2dfd8",
+          limit: "#c7c1b6",
+          cart: "#1c1b19",
+          pole: "#1c1b19",
+          axle: "#f4f2ed",
+          failed: "#c7c1b6",
         };
 
   context.setTransform(ratio, 0, 0, ratio, 0, 0);

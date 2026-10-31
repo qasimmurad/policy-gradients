@@ -37,7 +37,7 @@ export default function DemoPage() {
     <div>
       <header className="mb-8">
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Demo</h1>
-        <p className="mt-3 max-w-2xl text-zinc-600 dark:text-zinc-400">
+        <p className="mt-3 max-w-2xl text-muted">
           Both environments run entirely in your browser, replaying the weights
           that came out of training. Nothing is computed on a server.
         </p>
@@ -45,9 +45,9 @@ export default function DemoPage() {
 
       <DemoSwitcher cartpole={cartpole} gridworld={gridworld} />
 
-      <section className="mt-12 border-t border-zinc-200 pt-8 dark:border-zinc-800">
+      <section className="mt-12 border-t border-rule pt-8">
         <h2 className="text-sm font-medium">What you are looking at</h2>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
           CartPole gives the agent four numbers, the position and velocity of
           the cart and the angle and angular velocity of the pole, and it pushes
           left or right. The gridworld gives it two, its row and column, and it

@@ -1,6 +1,12 @@
 import Link from "next/link";
 
-export function Card({
+/**
+ * One row in the list of sections on the home page.
+ *
+ * A row with a rule above it rather than a bordered card. The page is a
+ * contents page for a write-up, not a dashboard of tiles.
+ */
+export function SectionLink({
   href,
   title,
   children,
@@ -12,29 +18,17 @@ export function Card({
   return (
     <Link
       href={href}
-      className="group block rounded-xl border border-zinc-200 p-6 transition-colors hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:border-zinc-700 dark:hover:bg-zinc-900"
+      className="group grid gap-1 border-t border-rule py-5 transition-colors hover:bg-ink/4 sm:grid-cols-[10rem_1fr] sm:gap-6"
     >
-      <h3 className="flex items-center gap-1.5 font-medium">
+      <h3 className="font-serif text-base group-hover:underline group-hover:underline-offset-4">
         {title}
-        <span
-          aria-hidden="true"
-          className="text-zinc-400 transition-transform group-hover:translate-x-0.5"
-        >
-          &rarr;
-        </span>
       </h3>
-      <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-        {children}
-      </p>
+      <p className="max-w-prose text-sm leading-relaxed text-muted">{children}</p>
     </Link>
   );
 }
 
-/** Marks a run that was played by a random agent rather than a trained one. */
+/** Marks a run played by a random agent rather than a trained one. */
 export function BaselineBadge() {
-  return (
-    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-      random baseline
-    </span>
-  );
+  return <span className="label text-proxy">random baseline</span>;
 }

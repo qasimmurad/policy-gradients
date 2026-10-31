@@ -130,10 +130,10 @@ export function RunExplorer({
   return (
     <div>
       {compared.length > 0 ? (
-        <section className="mb-10 rounded-xl border border-zinc-200 p-5 sm:p-6 dark:border-zinc-800">
+        <section className="mb-10 border-y border-rule py-6">
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <h2 className="font-medium">Comparison</h2>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm text-muted">
               {compared.length === 1
                 ? "Pick a second run to overlay."
                 : "Two runs overlaid."}
@@ -141,7 +141,7 @@ export function RunExplorer({
             <button
               type="button"
               onClick={() => setCompared([])}
-              className="ml-auto rounded-md px-2 py-1 text-sm text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+              className="ml-auto rounded-md px-2 py-1 text-sm text-muted hover:bg-ink/5"
             >
               Clear
             </button>
@@ -153,7 +153,7 @@ export function RunExplorer({
               window={averageWindow}
             />
           ) : (
-            <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="py-8 text-center text-sm text-muted">
               {compared.some((name) => metrics[name] === undefined)
                 ? "Loading run data."
                 : "Select two runs using the compare boxes below."}
@@ -162,7 +162,7 @@ export function RunExplorer({
         </section>
       ) : null}
 
-      <ul className="divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+      <ul className="divide-y divide-rule border-y border-rule">
         {runs.map((run) => {
           const isOpen = expanded.includes(run.name);
           const state = metrics[run.name];
@@ -174,11 +174,11 @@ export function RunExplorer({
                   type="button"
                   onClick={() => toggleExpanded(run.name)}
                   aria-expanded={isOpen}
-                  className="-mx-2 flex grow items-center gap-3 rounded-lg px-2 py-1 text-left hover:bg-zinc-50 dark:hover:bg-zinc-900"
+                  className="-mx-2 flex grow items-center gap-3 rounded-lg px-2 py-1 text-left hover:bg-ink/4"
                 >
                   <span
                     aria-hidden="true"
-                    className={`text-zinc-400 transition-transform ${isOpen ? "rotate-90" : ""}`}
+                    className={`text-muted transition-transform ${isOpen ? "rotate-90" : ""}`}
                   >
                     &rsaquo;
                   </span>
@@ -187,12 +187,10 @@ export function RunExplorer({
                       <span className="font-mono text-sm font-medium">{run.name}</span>
                       {run.baseline ? <BaselineBadge /> : null}
                       {!run.has_policy ? (
-                        <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-                          no policy exported
-                        </span>
+                        <span className="label">no policy exported</span>
                       ) : null}
                     </span>
-                    <span className="tabular mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                    <span className="tabular mt-1 flex flex-wrap gap-x-4 gap-y-0.5 font-mono text-xs text-muted">
                       <span>{run.summary.episodes} episodes</span>
                       <span>best {formatNumber(run.summary.best_reward, 0)}</span>
                       <span>last 50 avg {formatNumber(run.summary.mean_last_50, 1)}</span>
@@ -201,12 +199,12 @@ export function RunExplorer({
                   </span>
                 </button>
 
-                <label className="flex shrink-0 cursor-pointer items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+                <label className="flex shrink-0 cursor-pointer items-center gap-1.5 text-xs text-muted">
                   <input
                     type="checkbox"
                     checked={compared.includes(run.name)}
                     onChange={() => toggleCompared(run.name)}
-                    className="size-3.5 accent-indigo-600"
+                    className="size-3.5 accent-ink"
                   />
                   <span className="hidden sm:inline">compare</span>
                 </label>
@@ -217,20 +215,20 @@ export function RunExplorer({
                   <Hyperparameters run={run} />
 
                   {state === undefined ? (
-                    <p className="py-10 text-center text-sm text-zinc-500 dark:text-zinc-400">
+                    <p className="py-10 text-center text-sm text-muted">
                       Loading episodes.
                     </p>
                   ) : null}
 
                   {state?.status === "error" ? (
-                    <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
+                    <p className="notice notice-proxy text-sm">
                       Could not load metrics for this run: {state.message}
                     </p>
                   ) : null}
 
                   {state?.status === "ready" ? (
                     state.series.points.length === 0 ? (
-                      <p className="py-10 text-center text-sm text-zinc-500 dark:text-zinc-400">
+                      <p className="py-10 text-center text-sm text-muted">
                         No episodes logged for this run yet.
                       </p>
                     ) : (
@@ -277,21 +275,21 @@ function Hyperparameters({ run }: { run: RunEntry }) {
   return (
     <div>
       {rows.length === 0 ? (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm text-muted">
           No config recorded for this run.
         </p>
       ) : (
         <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-3 lg:grid-cols-4">
           {rows.map(([key, value]) => (
             <div key={key} className="min-w-0">
-              <dt className="truncate text-xs text-zinc-500 dark:text-zinc-400">{key}</dt>
+              <dt className="label truncate">{key}</dt>
               <dd className="tabular truncate font-mono">{value}</dd>
             </div>
           ))}
         </dl>
       )}
       {note ? (
-        <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">{note}</p>
+        <p className="mt-4 text-sm text-muted">{note}</p>
       ) : null}
     </div>
   );

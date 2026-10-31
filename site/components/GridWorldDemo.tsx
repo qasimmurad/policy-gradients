@@ -245,7 +245,7 @@ export function GridWorldDemo({ runs }: { runs: DemoRun[] }) {
   return (
     <div>
       {runs.length === 0 ? (
-        <p className="mb-6 border-l-2 border-amber-500 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+        <p className="notice notice-proxy mb-8 text-sm">
           No gridworld run has exported weights yet, so this is a random agent.
           Even random movement farms the proxy, which is the first hint that the
           reward is wrong.
@@ -253,7 +253,7 @@ export function GridWorldDemo({ runs }: { runs: DemoRun[] }) {
       ) : null}
 
       {policyError ? (
-        <p className="mb-6 border-l-2 border-red-500 bg-red-50 px-4 py-3 text-sm text-red-800 dark:bg-red-950/40 dark:text-red-200">
+        <p className="notice notice-proxy mb-8 text-sm">
           Could not load the weights for this run: {policyError}. Falling back to
           the random agent.
         </p>
@@ -295,7 +295,7 @@ export function GridWorldDemo({ runs }: { runs: DemoRun[] }) {
           </dl>
 
           {display.ending ? (
-            <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="mt-4 text-sm text-muted">
               {display.ending}
             </p>
           ) : null}
@@ -313,7 +313,7 @@ export function GridWorldDemo({ runs }: { runs: DemoRun[] }) {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="text-sm text-muted">
                 The random agent has no policy to read. Turn it off once a
                 trained gridworld run exists.
               </p>
@@ -326,21 +326,21 @@ export function GridWorldDemo({ runs }: { runs: DemoRun[] }) {
         <button
           type="button"
           onClick={() => setRunning((value) => !value)}
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+          className="rounded-lg bg-ink px-4 py-2 text-sm font-medium text-paper transition-opacity hover:opacity-80"
         >
           {running ? "Pause" : "Play"}
         </button>
         <button
           type="button"
           onClick={reset}
-          className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+          className="rounded-lg border border-rule px-4 py-2 text-sm font-medium transition-colors hover:bg-ink/5"
         >
           Reset episode
         </button>
         <button
           type="button"
           onClick={clearCounters}
-          className="rounded-lg px-3 py-2 text-sm text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+          className="rounded-lg px-3 py-2 text-sm text-muted hover:bg-ink/5"
         >
           Clear counters
         </button>
@@ -351,11 +351,11 @@ export function GridWorldDemo({ runs }: { runs: DemoRun[] }) {
 
         {runs.length > 0 ? (
           <label className="mb-3 block max-w-sm">
-            <span className="mb-1 block text-xs text-zinc-500 dark:text-zinc-400">Run</span>
+            <span className="mb-1 block text-xs text-muted">Run</span>
             <select
               value={selectedRun ?? ""}
               onChange={(event) => setSelectedRun(event.target.value)}
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+              className="w-full rounded-lg border border-rule bg-paper px-3 py-2 text-sm"
             >
               {runs.map((run) => (
                 <option key={run.name} value={run.name}>
@@ -378,8 +378,8 @@ export function GridWorldDemo({ runs }: { runs: DemoRun[] }) {
               className={[
                 "rounded-lg border px-3 py-1.5 text-sm transition-colors",
                 mode === option && !agentIsRandom
-                  ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900"
-                  : "border-zinc-300 hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800",
+                  ? "border-ink bg-ink text-paper"
+                  : "border-rule hover:bg-ink/5",
                 agentIsRandom ? "cursor-not-allowed opacity-40" : "",
               ].join(" ")}
             >
@@ -400,7 +400,7 @@ export function GridWorldDemo({ runs }: { runs: DemoRun[] }) {
         </label>
 
         {policy ? (
-          <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="mt-3 text-xs text-muted">
             gridworld, layers {describePolicy(policy)}, {policy.activation} between
             layers and softmax on the output.
           </p>
@@ -425,20 +425,20 @@ function Counter({
 }) {
   const colour =
     tone === "proxy"
-      ? "text-amber-700 dark:text-amber-400"
+      ? "text-proxy"
       : tone === "true"
-        ? "text-teal-700 dark:text-teal-400"
+        ? "text-true"
         : "";
   return (
     <div>
-      <dt className="text-xs tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
+      <dt className="label">
         {label}
       </dt>
       <dd className={`tabular mt-0.5 font-mono text-2xl ${colour}`}>
         {value.toFixed(digits)}
       </dd>
       {note ? (
-        <dd className="text-xs text-zinc-500 dark:text-zinc-500">{note}</dd>
+        <dd className="text-xs text-muted">{note}</dd>
       ) : null}
     </div>
   );
@@ -447,14 +447,14 @@ function Counter({
 function ProbabilityBar({ label, value }: { label: string; value: number }) {
   return (
     <div className="flex items-center gap-3">
-      <span className="w-10 text-xs text-zinc-500 dark:text-zinc-400">{label}</span>
-      <span className="h-1 grow overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+      <span className="w-10 text-xs text-muted">{label}</span>
+      <span className="h-1 grow overflow-hidden bg-ink/12">
         <span
-          className="block h-full rounded-full bg-zinc-900 dark:bg-zinc-100"
+          className="block h-full bg-ink"
           style={{ width: `${Math.max(0, Math.min(1, value)) * 100}%` }}
         />
       </span>
-      <span className="tabular w-12 text-right font-mono text-xs text-zinc-500 dark:text-zinc-400">
+      <span className="tabular w-12 text-right font-mono text-xs text-muted">
         {(value * 100).toFixed(0)}%
       </span>
     </div>
@@ -478,20 +478,22 @@ function draw(
   const colours =
     theme === "dark"
       ? {
-          background: "#18181b",
-          line: "#3f3f46",
-          goal: "#2dd4bf",
-          agent: "#fafafa",
-          trail: "#52525b",
-          text: "#a1a1aa",
+          background: "#1d1a17",
+          line: "#2e2a26",
+          // Teal, the same colour the true reward counter and the true reward
+          // line use. The goal square is the true objective.
+          goal: "#5eead4",
+          agent: "#ece8e1",
+          trail: "#4a443d",
+          text: "#918b81",
         }
       : {
-          background: "#fafafa",
-          line: "#d4d4d8",
-          goal: "#0d9488",
-          agent: "#18181b",
-          trail: "#d4d4d8",
-          text: "#71717a",
+          background: "#f4f2ed",
+          line: "#e2dfd8",
+          goal: "#0f766e",
+          agent: "#1c1b19",
+          trail: "#c7c1b6",
+          text: "#6b6862",
         };
 
   context.setTransform(ratio, 0, 0, ratio, 0, 0);

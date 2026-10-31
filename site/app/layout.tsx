@@ -37,13 +37,13 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
-      <body className="flex min-h-full flex-col bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+      <body className="flex min-h-full flex-col bg-paper text-ink">
         <Nav />
-        <main className="mx-auto w-full max-w-4xl grow px-5 py-12 sm:px-8 sm:py-16">
+        <main className="mx-auto w-full max-w-3xl grow px-5 py-12 sm:px-8 sm:py-16">
           {children}
         </main>
-        <footer className="border-t border-zinc-200 dark:border-zinc-800">
-          <div className="mx-auto w-full max-w-4xl px-5 py-8 text-sm text-zinc-500 sm:px-8 dark:text-zinc-400">
+        <footer className="border-t border-rule">
+          <div className="mx-auto w-full max-w-3xl px-5 py-8 text-sm text-muted sm:px-8">
             A deep learning tutorial project. Everything on this site is built
             from the run data in the repository.
           </div>

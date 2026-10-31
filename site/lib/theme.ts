@@ -48,38 +48,40 @@ export type ChartPalette = {
   raw: string;
   average: string;
   loss: string;
-  compareA: string;
-  compareB: string;
+  /** Two runs are told apart by solid against dashed, not by hue. */
+  compare: string;
   trueReward: string;
   proxyReward: string;
 };
 
 export function chartColors(theme: Theme): ChartPalette {
+  // Matches the paper and ink palette in globals.css. Teal and amber are the
+  // only hues, and they mean true reward and proxy reward wherever they appear.
+  // Everything else is ink, muted or rule, so a coloured line always carries
+  // information rather than decoration.
   return theme === "dark"
     ? {
-        axis: "#a1a1aa",
-        grid: "#27272a",
-        tooltipBackground: "#18181b",
-        tooltipBorder: "#3f3f46",
-        raw: "#71717a",
-        average: "#818cf8",
-        loss: "#fbbf24",
-        compareA: "#818cf8",
-        compareB: "#2dd4bf",
-        trueReward: "#2dd4bf",
-        proxyReward: "#fbbf24",
+        axis: "#918b81",
+        grid: "#2e2a26",
+        tooltipBackground: "#1d1a17",
+        tooltipBorder: "#2e2a26",
+        raw: "#4a443d",
+        average: "#ece8e1",
+        loss: "#ece8e1",
+        compare: "#ece8e1",
+        trueReward: "#5eead4",
+        proxyReward: "#e8b339",
       }
     : {
-        axis: "#52525b",
-        grid: "#e4e4e7",
-        tooltipBackground: "#ffffff",
-        tooltipBorder: "#d4d4d8",
-        raw: "#a1a1aa",
-        average: "#4f46e5",
-        loss: "#b45309",
-        compareA: "#4f46e5",
-        compareB: "#0d9488",
-        trueReward: "#0d9488",
-        proxyReward: "#b45309",
+        axis: "#6b6862",
+        grid: "#e2dfd8",
+        tooltipBackground: "#fbfaf8",
+        tooltipBorder: "#e2dfd8",
+        raw: "#c7c1b6",
+        average: "#1c1b19",
+        loss: "#1c1b19",
+        compare: "#1c1b19",
+        trueReward: "#0f766e",
+        proxyReward: "#a65f17",
       };
 }

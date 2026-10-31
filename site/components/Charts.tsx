@@ -46,7 +46,7 @@ function TooltipBox({
 }) {
   return (
     <div
-      className="rounded-lg px-3 py-2 text-xs shadow-sm ring-1"
+      className="px-3 py-2 text-xs shadow-sm ring-1"
       style={{ background, borderColor: border, boxShadow: `0 0 0 1px ${border}` }}
     >
       <p className="mb-1 font-medium">{title}</p>
@@ -54,10 +54,10 @@ function TooltipBox({
         <p key={row.label} className="tabular flex items-center gap-2">
           <span
             aria-hidden="true"
-            className="inline-block size-2 rounded-full"
+            className="inline-block size-2"
             style={{ background: row.color }}
           />
-          <span className="text-zinc-500 dark:text-zinc-400">{row.label}</span>
+          <span className="text-muted">{row.label}</span>
           <span className="ml-auto font-medium">{formatNumber(row.value, 2)}</span>
         </p>
       ))}
@@ -74,7 +74,7 @@ const AXIS_PROPS = {
 function BucketNote({ series }: { series: ChartSeries }) {
   if (!series.bucketed) return null;
   return (
-    <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+    <p className="mt-2 text-xs text-muted">
       {series.episodes.toLocaleString("en-US")} episodes, averaged into groups of{" "}
       {series.bucketSize} so the chart stays readable. The moving average is
       computed on every episode before grouping.
@@ -256,7 +256,7 @@ export function RewardComparisonChart({
           { label: `true reward, moving average ${window}`, color: colors.trueReward },
         ]}
       />
-      <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+      <p className="mt-2 text-xs text-muted">
         Faint lines are the per episode values, solid lines their moving average.
         Both are drawn on the same axis so the gap between them is real.
       </p>
@@ -324,7 +324,6 @@ export function CompareChart({
   window: number;
 }) {
   const colors = chartColors(useResolvedTheme());
-  const seriesColors = [colors.compareA, colors.compareB];
 
   // Merge on episode number, because the two runs need not be the same length.
   const byEpisode = new Map<number, Record<string, number | null>>();
@@ -365,7 +364,7 @@ export function CompareChart({
                   rows={entries.map((entry, index) => ({
                     label: entry.name,
                     value: row[`run${index}`] ?? null,
-                    color: seriesColors[index],
+                    color: colors.compare,
                   }))}
                 />
               );
@@ -376,8 +375,9 @@ export function CompareChart({
               key={entry.name}
               type="monotone"
               dataKey={`run${index}`}
-              stroke={seriesColors[index]}
-              strokeWidth={2}
+              stroke={colors.compare}
+              strokeWidth={index === 0 ? 2 : 1.5}
+              strokeDasharray={index === 0 ? undefined : "5 3"}
               dot={false}
               isAnimationActive={false}
               connectNulls
@@ -387,11 +387,12 @@ export function CompareChart({
       </Frame>
       <Legend
         items={entries.map((entry, index) => ({
-          label: entry.name,
-          color: seriesColors[index],
+          label: index === 0 ? entry.name : `${entry.name} (dashed)`,
+          color: colors.compare,
+          dashed: index === 1,
         }))}
       />
-      <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+      <p className="mt-2 text-xs text-muted">
         Moving average of reward, window {window}. Raw episodes are left out so
         the two curves stay legible.
       </p>
@@ -399,15 +400,22 @@ export function CompareChart({
   );
 }
 
-function Legend({ items }: { items: { label: string; color: string }[] }) {
+function Legend({
+  items,
+}: {
+  items: { label: string; color: string; dashed?: boolean }[];
+}) {
   return (
-    <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-zinc-600 dark:text-zinc-400">
+    <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted">
       {items.map((item) => (
         <li key={item.label} className="flex items-center gap-1.5">
           <span
             aria-hidden="true"
-            className="inline-block h-0.5 w-4 rounded-full"
-            style={{ background: item.color }}
+            className="inline-block h-0 w-4 border-t-2"
+            style={{
+              borderColor: item.color,
+              borderTopStyle: item.dashed ? "dashed" : "solid",
+            }}
           />
           {item.label}
         </li>

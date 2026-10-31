@@ -17,7 +17,7 @@ export default function WriteupPage() {
           {writeup.title}
         </h1>
         {writeup.updated ? (
-          <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="mt-3 text-sm text-muted">
             Last updated {writeup.updated}
           </p>
         ) : null}
