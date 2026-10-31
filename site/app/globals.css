@@ -91,26 +91,34 @@
 /* The typography plugin draws its colours from these variables, so pointing
    them at the palette makes long form content follow the theme without a
    single dark: variant or a prose-invert. */
-@layer components {
-  .prose {
-    font-family: var(--font-serif);
-    --tw-prose-body: var(--ink);
-    --tw-prose-headings: var(--ink);
-    --tw-prose-links: var(--ink);
-    --tw-prose-bold: var(--ink);
-    --tw-prose-code: var(--ink);
-    --tw-prose-quotes: var(--muted);
-    --tw-prose-quote-borders: var(--rule);
-    --tw-prose-captions: var(--muted);
-    --tw-prose-counters: var(--muted);
-    --tw-prose-bullets: var(--rule);
-    --tw-prose-hr: var(--rule);
-    --tw-prose-th-borders: var(--rule);
-    --tw-prose-td-borders: var(--rule);
-    --tw-prose-pre-bg: var(--paper-sunk);
-    --tw-prose-pre-code: var(--ink);
-  }
+/* Deliberately unlayered.
 
+   The typography plugin sets its own .prose variable defaults inside
+   @layer utilities, and those defaults assume a light background. Cascade
+   layers beat specificity, so a rule in @layer components loses to it however
+   specific it is, and body text renders slate blue on dark paper. Unlayered
+   declarations outrank every layer, which is the only thing that actually
+   wins here. */
+.prose {
+  font-family: var(--font-serif);
+  --tw-prose-body: var(--ink);
+  --tw-prose-headings: var(--ink);
+  --tw-prose-links: var(--ink);
+  --tw-prose-bold: var(--ink);
+  --tw-prose-code: var(--ink);
+  --tw-prose-quotes: var(--muted);
+  --tw-prose-quote-borders: var(--rule);
+  --tw-prose-captions: var(--muted);
+  --tw-prose-counters: var(--muted);
+  --tw-prose-bullets: var(--rule);
+  --tw-prose-hr: var(--rule);
+  --tw-prose-th-borders: var(--rule);
+  --tw-prose-td-borders: var(--rule);
+  --tw-prose-pre-bg: var(--paper-sunk);
+  --tw-prose-pre-code: var(--ink);
+}
+
+@layer components {
   /* A note that needs to stand slightly apart from the text: a rule down the
      left rather than a tinted rounded box. */
   .notice {
