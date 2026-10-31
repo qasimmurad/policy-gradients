@@ -13,6 +13,18 @@ import { withBasePath } from "@/lib/basePath";
  * Rendering happens at build time in a server component, so none of the parser
  * is shipped to the browser.
  */
+/**
+ * Remove HTML comments before rendering.
+ *
+ * Without raw HTML enabled, react-markdown passes a comment through as text,
+ * so `<!-- note to self -->` would appear on the page verbatim. Notes left in a
+ * log entry for somebody to answer later are exactly the kind of thing that
+ * must not reach a reader.
+ */
+function withoutComments(markdown: string): string {
+  return markdown.replace(/<!--[\s\S]*?-->/g, "").trimEnd();
+}
+
 export function Markdown({ children }: { children: string }) {
   return (
     <div
@@ -61,7 +73,7 @@ export function Markdown({ children }: { children: string }) {
           ),
         }}
       >
-        {children}
+        {withoutComments(children)}
       </ReactMarkdown>
     </div>
   );
