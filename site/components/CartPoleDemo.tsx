@@ -385,16 +385,33 @@ export function CartPoleDemo({ runs }: { runs: DemoRun[] }) {
             ))}
           </div>
 
-          <label className="mt-3 flex cursor-pointer items-center gap-2 text-sm">
+          <label
+            className={[
+              "mt-3 flex items-center gap-2 text-sm",
+              policy === null ? "cursor-not-allowed text-muted" : "cursor-pointer",
+            ].join(" ")}
+            title={
+              policy === null
+                ? "No CartPole run has exported weights yet, so there is nothing to switch to"
+                : undefined
+            }
+          >
             <input
               type="checkbox"
               checked={agentIsRandom}
               disabled={policy === null}
               onChange={(event) => setPreferRandomAgent(event.target.checked)}
-              className="size-4 accent-ink disabled:opacity-40"
+              className="size-4 accent-ink disabled:cursor-not-allowed disabled:opacity-40"
             />
             Random agent
           </label>
+
+          {policy === null ? (
+            <p className="mt-1 text-xs text-muted">
+              Locked on. Unticking this would run a trained policy, and no
+              CartPole run has exported one yet.
+            </p>
+          ) : null}
 
           <p className="mt-2 text-xs leading-relaxed text-muted">
             {agentIsRandom
