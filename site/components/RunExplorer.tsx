@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { CompareChart, LossChart, RewardChart } from "@/components/Charts";
-import { SyntheticBadge } from "@/components/Card";
+import { BaselineBadge } from "@/components/Card";
 import {
   configRows,
   formatNumber,
@@ -179,7 +179,7 @@ export function RunExplorer({
                   <span className="min-w-0 grow">
                     <span className="flex flex-wrap items-center gap-2">
                       <span className="font-mono text-sm font-medium">{run.name}</span>
-                      {run.synthetic ? <SyntheticBadge /> : null}
+                      {run.baseline ? <BaselineBadge /> : null}
                       {!run.has_policy ? (
                         <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
                           no policy exported

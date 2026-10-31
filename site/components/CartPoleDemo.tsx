@@ -34,7 +34,7 @@ import { useResolvedTheme } from "@/lib/theme";
 
 export type DemoRun = {
   name: string;
-  synthetic: boolean;
+  baseline: boolean;
 };
 
 type Mode = "sample" | "greedy";
@@ -358,7 +358,7 @@ export function CartPoleDemo({ runs }: { runs: DemoRun[] }) {
                 {runs.map((run) => (
                   <option key={run.name} value={run.name}>
                     {run.name}
-                    {run.synthetic ? " (synthetic)" : ""}
+                    {run.baseline ? " (random baseline)" : ""}
                   </option>
                 ))}
               </select>

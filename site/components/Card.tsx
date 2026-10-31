@@ -30,10 +30,11 @@ export function Card({
   );
 }
 
-export function SyntheticBadge() {
+/** Marks a run that was played by a random agent rather than a trained one. */
+export function BaselineBadge() {
   return (
     <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-      synthetic
+      random baseline
     </span>
   );
 }

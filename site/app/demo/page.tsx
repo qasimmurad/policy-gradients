@@ -21,7 +21,7 @@ export default function DemoPage() {
   ];
   const runs: DemoRun[] = ordered.map((run) => ({
     name: run.name,
-    synthetic: run.synthetic,
+    baseline: run.baseline,
   }));
 
   return (

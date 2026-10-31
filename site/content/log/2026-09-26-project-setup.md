@@ -12,8 +12,9 @@ site and builds the index the pages read. A unit test exports a small network
 and checks that replaying its JSON by hand gives the same action probabilities
 as PyTorch, which is what lets the browser demo be trusted.
 
-The run shown below, `_synthetic-example`, is fake. It exists so the charts and
-the run table could be built and reviewed before the first real run finished. It
-has no exported policy, so the demo page falls back to the random agent.
+The run shown at this point, `_synthetic-example`, was fake. It existed so the
+charts and the run table could be built and reviewed before any real run had
+happened, and it was removed once the random baselines replaced it. It had no
+exported policy, so the demo page fell back to the random agent.
 
 Next up is the REINFORCE implementation itself.

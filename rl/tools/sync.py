@@ -195,7 +195,6 @@ def sync(runs_dir: Path = RUNS_DIR, data_dir: Path = DATA_DIR, quiet: bool = Fal
         entries.append(
             {
                 "name": run_dir.name,
-                "synthetic": bool(config.get("synthetic", False)),
                 "baseline": bool(config.get("baseline", False)),
                 "env": config.get("env"),
                 "reward_mode": config.get("reward_mode"),

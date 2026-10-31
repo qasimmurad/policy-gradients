@@ -89,7 +89,6 @@ npm run dev
 | --- | --- |
 | `python3 -m unittest discover -s rl/tools -p "test_*.py"` | Tests the tooling. The torch test is skipped if torch is missing. |
 | `python3 rl/tools/sync.py` | Copies runs into the site and rebuilds `index.json`. |
-| `python3 rl/tools/make_synthetic_run.py` | Regenerates the fake example run. |
 | `npm run dev` (in `site/`) | Development server on port 3000. |
 | `npm run sync` (in `site/`) | The sync script, also run automatically before a build. |
 | `npm run build` (in `site/`) | Static export into `site/out/`. |
@@ -99,13 +98,20 @@ npm run dev
 Syncing is deterministic. The same runs always produce the same `index.json`, so
 running it does not leave a spurious diff behind.
 
-## The synthetic run
+## Baseline runs
 
-`rl/runs/_synthetic-example/` is fake data, thirty episodes of invented rewards
-and losses, so the charts and the run table could be built before real training
-existed. Its config sets `"synthetic": true` and the site labels it wherever it
-appears. It has no `policy.json`, so the demo page falls back to the random
-agent. Delete it once there are real runs.
+`cartpole-random` and `gridworld-random` are a uniformly random agent playing
+each environment, produced by `--agent random`. They carry `"baseline": true`
+in their config, so the site labels them and the home page will not read one as
+a result. They exist to give every trained policy a floor to be measured
+against, and they are honest data rather than invented numbers.
+
+As of the last run, random scores a mean of 22 on CartPole, and on the
+gridworld it reaches the goal in 97 of 300 episodes for a mean true reward of
+0.32 while collecting a mean proxy reward of 2.16. That second pair is already
+the Phase 2 story in miniature: the proxy pays out handsomely for wandering
+about, and a proxy trained agent only has to push it higher while letting the
+true reward fall.
 
 ## Notes on the site
 
@@ -145,8 +151,8 @@ Three things Next does not rewrite are handled in `site/lib/basePath.ts`:
   rather than a redeploy.
 
 The `postbuild` script writes `out/.nojekyll`. Without it Pages runs the export
-through Jekyll, which discards every path beginning with an underscore, meaning
-all of `_next/` and the `_synthetic-example` run. Next does not copy dotfiles
+through Jekyll, which discards every path beginning with an underscore, which
+is the whole of `_next/`. Next does not copy dotfiles
 out of `public/`, which is why it is written after the export rather than
 committed.
 

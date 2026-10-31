@@ -13,6 +13,8 @@ import { withBasePath } from "./basePath";
 
 export type RunSummary = {
   episodes: number;
+  mean_true_last_50: number | null;
+  mean_proxy_last_50: number | null;
   best_reward: number | null;
   final_reward: number | null;
   mean_reward: number | null;
@@ -23,10 +25,19 @@ export type RunSummary = {
   has_loss: boolean;
 };
 
+/** Which optional per episode reward columns a run logged. */
+export type RunColumns = {
+  true_reward: boolean;
+  proxy_reward: boolean;
+};
+
 export type RunEntry = {
   name: string;
-  synthetic: boolean;
+  /** A random agent, logged so a trained policy has a floor to beat. */
+  baseline: boolean;
   env: string | null;
+  reward_mode: string | null;
+  columns: RunColumns;
   config: Record<string, unknown>;
   last_episode: number | null;
   updated_at: string | null;
@@ -195,21 +206,26 @@ function mean(values: (number | null)[]): number | null {
 /**
  * The run the home page and the demo should show by default.
  *
- * Real runs always win over synthetic ones, however good the synthetic numbers
- * look. Among real runs the best is the one with the highest mean reward over
- * its last fifty episodes, which rewards a policy that ended strong rather than
- * one that got lucky once.
+ * A trained run always wins over a random baseline, however good the baseline
+ * numbers happen to look. Among trained runs the best is the one with the
+ * highest mean reward over its last fifty episodes, which favours a policy that
+ * ended strong over one that got lucky once.
  */
 export function pickFeaturedRun(runs: RunEntry[]): RunEntry | null {
-  const real = runs.filter((run) => !run.synthetic);
-  return bestOf(real.length > 0 ? real : runs);
+  const trained = runs.filter((run) => !run.baseline);
+  return bestOf(trained.length > 0 ? trained : runs);
+}
+
+/** True when both reward columns are present, so the two can be plotted together. */
+export function hasBothRewards(run: RunEntry): boolean {
+  return Boolean(run.columns?.true_reward && run.columns?.proxy_reward);
 }
 
 /** The run the demo should load, which must actually have exported weights. */
 export function pickDemoRun(runs: RunEntry[]): RunEntry | null {
   const withPolicy = runs.filter((run) => run.has_policy);
-  const real = withPolicy.filter((run) => !run.synthetic);
-  return bestOf(real.length > 0 ? real : withPolicy);
+  const trained = withPolicy.filter((run) => !run.baseline);
+  return bestOf(trained.length > 0 ? trained : withPolicy);
 }
 
 function bestOf(runs: RunEntry[]): RunEntry | null {
@@ -225,10 +241,10 @@ function bestOf(runs: RunEntry[]): RunEntry | null {
   return best ?? runs[0] ?? null;
 }
 
-/** Newest first, with synthetic runs pushed to the bottom of the list. */
+/** Newest first, with random baselines pushed to the bottom of the list. */
 export function sortRunsForDisplay(runs: RunEntry[]): RunEntry[] {
   return [...runs].sort((a, b) => {
-    if (a.synthetic !== b.synthetic) return a.synthetic ? 1 : -1;
+    if (a.baseline !== b.baseline) return a.baseline ? 1 : -1;
     const left = a.updated_at ?? "";
     const right = b.updated_at ?? "";
     if (left !== right) return right.localeCompare(left);
@@ -245,7 +261,7 @@ export function formatNumber(value: number | null | undefined, digits = 1): stri
 }
 
 /** Config keys the run table shows on their own line rather than in the grid. */
-export const HIDDEN_CONFIG_KEYS = new Set(["run_name", "synthetic", "note"]);
+export const HIDDEN_CONFIG_KEYS = new Set(["run_name", "baseline", "note"]);
 
 export function configRows(config: Record<string, unknown>): [string, string][] {
   return Object.entries(config)

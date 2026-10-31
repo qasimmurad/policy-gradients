@@ -106,7 +106,7 @@ class TestSync(unittest.TestCase):
             runs_dir = Path(tmp) / "runs"
             data_dir = Path(tmp) / "data"
             fake_run(runs_dir, "short-run", 5)
-            fake_run(runs_dir, "long-run", 5000, synthetic=True)
+            fake_run(runs_dir, "long-run", 5000, baseline=True)
 
             index = sync(runs_dir=runs_dir, data_dir=data_dir, quiet=True)
 
@@ -115,12 +115,12 @@ class TestSync(unittest.TestCase):
 
             self.assertEqual(by_name["short-run"]["last_episode"], 4)
             self.assertEqual(by_name["short-run"]["summary"]["episodes"], 5)
-            self.assertFalse(by_name["short-run"]["synthetic"])
+            self.assertFalse(by_name["short-run"]["baseline"])
             self.assertFalse(by_name["short-run"]["has_policy"])
             self.assertEqual(by_name["short-run"]["config"]["learning_rate"], 0.01)
 
             self.assertEqual(by_name["long-run"]["last_episode"], 4999)
-            self.assertTrue(by_name["long-run"]["synthetic"])
+            self.assertTrue(by_name["long-run"]["baseline"])
 
             # Files are copied where the site expects them.
             self.assertTrue((data_dir / "runs" / "short-run" / "metrics.jsonl").exists())

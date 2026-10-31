@@ -1,0 +1,8 @@
+{
+  "run_name": "cartpole-random",
+  "created_at": "2026-10-31T14:57:06Z",
+  "env": "cartpole",
+  "algorithm": "random",
+  "baseline": true,
+  "episodes": 500
+}

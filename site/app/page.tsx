@@ -1,4 +1,4 @@
-import { Card, SyntheticBadge } from "@/components/Card";
+import { Card, BaselineBadge } from "@/components/Card";
 import { loadRunIndex, loadWriteup } from "@/lib/content";
 import { cartPoleRuns, formatNumber, pickFeaturedRun } from "@/lib/runs";
 
@@ -50,17 +50,19 @@ export default function HomePage() {
               Peak average reward over{" "}
               {featured.summary.moving_average_window} episodes, from{" "}
               <span className="font-mono">{featured.name}</span>
-              {featured.synthetic ? (
+              {featured.baseline ? (
                 <>
                   {" "}
-                  <SyntheticBadge />
+                  <BaselineBadge />
                 </>
               ) : null}
               . CartPole-v1 caps an episode at 500 steps.
             </p>
-            {featured.synthetic ? (
+            {featured.baseline ? (
               <p className="mt-2 text-sm text-amber-700 dark:text-amber-400">
-                This is made up data from the example run, not a trained policy.
+                This is a random agent, which is the floor a trained policy has
+                to beat. The headline will switch to the best trained run as
+                soon as one is logged.
               </p>
             ) : null}
           </>
