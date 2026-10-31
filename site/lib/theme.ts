@@ -50,6 +50,8 @@ export type ChartPalette = {
   loss: string;
   compareA: string;
   compareB: string;
+  trueReward: string;
+  proxyReward: string;
 };
 
 export function chartColors(theme: Theme): ChartPalette {
@@ -64,6 +66,8 @@ export function chartColors(theme: Theme): ChartPalette {
         loss: "#fbbf24",
         compareA: "#818cf8",
         compareB: "#2dd4bf",
+        trueReward: "#2dd4bf",
+        proxyReward: "#fbbf24",
       }
     : {
         axis: "#52525b",
@@ -75,5 +79,7 @@ export function chartColors(theme: Theme): ChartPalette {
         loss: "#b45309",
         compareA: "#4f46e5",
         compareB: "#0d9488",
+        trueReward: "#0d9488",
+        proxyReward: "#b45309",
       };
 }

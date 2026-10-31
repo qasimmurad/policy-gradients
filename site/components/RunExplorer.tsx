@@ -2,11 +2,17 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { CompareChart, LossChart, RewardChart } from "@/components/Charts";
+import {
+  CompareChart,
+  LossChart,
+  RewardChart,
+  RewardComparisonChart,
+} from "@/components/Charts";
 import { BaselineBadge } from "@/components/Card";
 import {
   configRows,
   formatNumber,
+  hasBothRewards,
   parseMetricsJsonl,
   runDataUrl,
   toChartSeries,
@@ -229,10 +235,22 @@ export function RunExplorer({
                       </p>
                     ) : (
                       <div className="mt-8 space-y-10">
-                        <div>
-                          <h3 className="mb-3 text-sm font-medium">Reward per episode</h3>
-                          <RewardChart series={state.series} window={averageWindow} />
-                        </div>
+                        {hasBothRewards(run) ? (
+                          <div>
+                            <h3 className="mb-3 text-sm font-medium">
+                              Proxy reward vs true reward
+                            </h3>
+                            <RewardComparisonChart
+                              series={state.series}
+                              window={averageWindow}
+                            />
+                          </div>
+                        ) : (
+                          <div>
+                            <h3 className="mb-3 text-sm font-medium">Reward per episode</h3>
+                            <RewardChart series={state.series} window={averageWindow} />
+                          </div>
+                        )}
                         {run.summary.has_loss ? (
                           <div>
                             <h3 className="mb-3 text-sm font-medium">Policy loss</h3>

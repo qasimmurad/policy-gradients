@@ -65,6 +65,9 @@ export type MetricPoint = {
   episode: number;
   reward: number | null;
   loss: number | null;
+  /** Present only for environments that report both, which today means the gridworld. */
+  trueReward: number | null;
+  proxyReward: number | null;
   timestamp?: string;
 };
 
@@ -73,6 +76,10 @@ export type ChartPoint = {
   reward: number | null;
   average: number | null;
   loss: number | null;
+  trueReward: number | null;
+  trueAverage: number | null;
+  proxyReward: number | null;
+  proxyAverage: number | null;
 };
 
 export function runDataUrl(runName: string, file: string): string {
@@ -105,6 +112,8 @@ export function parseMetricsJsonl(text: string): MetricPoint[] {
       episode: row.episode,
       reward: finiteOrNull(row.reward),
       loss: finiteOrNull(row.loss),
+      trueReward: finiteOrNull(row.true_reward),
+      proxyReward: finiteOrNull(row.proxy_reward),
       timestamp: typeof row.timestamp === "string" ? row.timestamp : undefined,
     });
   }
@@ -125,17 +134,17 @@ function finiteOrNull(value: unknown): number | null {
  * counted as zero.
  */
 export function movingAverage(
-  points: MetricPoint[],
+  values: (number | null)[],
   window: number = MOVING_AVERAGE_WINDOW,
 ): (number | null)[] {
-  return points.map((_, index) => {
+  return values.map((_, index) => {
     const start = Math.max(0, index - window + 1);
     let total = 0;
     let count = 0;
     for (let i = start; i <= index; i += 1) {
-      const reward = points[i].reward;
-      if (reward !== null) {
-        total += reward;
+      const value = values[i];
+      if (value !== null) {
+        total += value;
         count += 1;
       }
     }
@@ -165,12 +174,18 @@ export function toChartSeries(
   window: number = MOVING_AVERAGE_WINDOW,
   maxPoints: number = MAX_CHART_POINTS,
 ): ChartSeries {
-  const averages = movingAverage(points, window);
+  const averages = movingAverage(points.map((p) => p.reward), window);
+  const trueAverages = movingAverage(points.map((p) => p.trueReward), window);
+  const proxyAverages = movingAverage(points.map((p) => p.proxyReward), window);
   const full: ChartPoint[] = points.map((point, index) => ({
     episode: point.episode,
     reward: point.reward,
     average: averages[index],
     loss: point.loss,
+    trueReward: point.trueReward,
+    trueAverage: trueAverages[index],
+    proxyReward: point.proxyReward,
+    proxyAverage: proxyAverages[index],
   }));
 
   if (full.length <= maxPoints) {
@@ -186,6 +201,10 @@ export function toChartSeries(
       reward: mean(slice.map((p) => p.reward)),
       average: mean(slice.map((p) => p.average)),
       loss: mean(slice.map((p) => p.loss)),
+      trueReward: mean(slice.map((p) => p.trueReward)),
+      trueAverage: mean(slice.map((p) => p.trueAverage)),
+      proxyReward: mean(slice.map((p) => p.proxyReward)),
+      proxyAverage: mean(slice.map((p) => p.proxyAverage)),
     });
   }
   return { points: bucketed, bucketed: true, bucketSize, episodes: full.length };

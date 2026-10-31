@@ -151,6 +151,120 @@ export function RewardChart({ series, window }: { series: ChartSeries; window: n
   );
 }
 
+/**
+ * Both rewards on one pair of axes, which is the whole point of Phase 2.
+ *
+ * The proxy is what the agent is paid and the true reward is what we actually
+ * wanted. Drawn together, a reward hacking run shows the proxy climbing while
+ * the true line stays flat near zero. They share a y axis deliberately: a
+ * second axis would rescale the two until any pair of lines looked like it
+ * diverged, which is exactly the claim the chart is supposed to be evidence for.
+ */
+export function RewardComparisonChart({
+  series,
+  window,
+}: {
+  series: ChartSeries;
+  window: number;
+}) {
+  const colors = chartColors(useResolvedTheme());
+
+  return (
+    <div>
+      <Frame>
+        <LineChart data={series.points} margin={{ top: 8, right: 8, bottom: 4, left: -12 }}>
+          <CartesianGrid stroke={colors.grid} strokeDasharray="3 3" vertical={false} />
+          <XAxis
+            dataKey="episode"
+            type="number"
+            domain={["dataMin", "dataMax"]}
+            stroke={colors.axis}
+            {...AXIS_PROPS}
+          />
+          <YAxis stroke={colors.axis} width={48} {...AXIS_PROPS} />
+          <Tooltip
+            cursor={{ stroke: colors.axis, strokeWidth: 1, strokeDasharray: "3 3" }}
+            content={({ active, payload }) => {
+              if (!active || !payload?.length) return null;
+              const point = payload[0].payload as ChartPoint;
+              return (
+                <TooltipBox
+                  title={`Episode ${point.episode}`}
+                  background={colors.tooltipBackground}
+                  border={colors.tooltipBorder}
+                  rows={[
+                    { label: "proxy", value: point.proxyReward, color: colors.proxyReward },
+                    {
+                      label: `proxy, avg ${window}`,
+                      value: point.proxyAverage,
+                      color: colors.proxyReward,
+                    },
+                    { label: "true", value: point.trueReward, color: colors.trueReward },
+                    {
+                      label: `true, avg ${window}`,
+                      value: point.trueAverage,
+                      color: colors.trueReward,
+                    },
+                  ]}
+                />
+              );
+            }}
+          />
+          <Line
+            type="monotone"
+            dataKey="proxyReward"
+            stroke={colors.proxyReward}
+            strokeOpacity={0.25}
+            strokeWidth={1}
+            dot={false}
+            isAnimationActive={false}
+            connectNulls
+          />
+          <Line
+            type="monotone"
+            dataKey="trueReward"
+            stroke={colors.trueReward}
+            strokeOpacity={0.25}
+            strokeWidth={1}
+            dot={false}
+            isAnimationActive={false}
+            connectNulls
+          />
+          <Line
+            type="monotone"
+            dataKey="proxyAverage"
+            stroke={colors.proxyReward}
+            strokeWidth={2}
+            dot={false}
+            isAnimationActive={false}
+            connectNulls
+          />
+          <Line
+            type="monotone"
+            dataKey="trueAverage"
+            stroke={colors.trueReward}
+            strokeWidth={2}
+            dot={false}
+            isAnimationActive={false}
+            connectNulls
+          />
+        </LineChart>
+      </Frame>
+      <Legend
+        items={[
+          { label: `proxy reward, moving average ${window}`, color: colors.proxyReward },
+          { label: `true reward, moving average ${window}`, color: colors.trueReward },
+        ]}
+      />
+      <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+        Faint lines are the per episode values, solid lines their moving average.
+        Both are drawn on the same axis so the gap between them is real.
+      </p>
+      <BucketNote series={series} />
+    </div>
+  );
+}
+
 export function LossChart({ series }: { series: ChartSeries }) {
   const colors = chartColors(useResolvedTheme());
 
