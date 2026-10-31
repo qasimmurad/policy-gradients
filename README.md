@@ -17,8 +17,7 @@ pip install -r requirements.txt
 python rl/agent/reinforce.py --env cartpole  --agent random --episodes 500
 python rl/agent/reinforce.py --env gridworld --agent random --episodes 300
 
-# Training runs. These raise NotImplementedError until the bodies in
-# rl/agent/reinforce.py are written.
+# Training runs.
 python rl/agent/reinforce.py --env cartpole --episodes 500 --run-name cartpole-v1
 python rl/agent/reinforce.py --env gridworld --reward true  --episodes 300 --run-name grid-true
 python rl/agent/reinforce.py --env gridworld --reward proxy --episodes 300 --run-name grid-proxy
@@ -26,17 +25,22 @@ python rl/agent/reinforce.py --env gridworld --reward proxy --episodes 300 --run
 python rl/tools/sync.py
 ```
 
-What each run should produce. Baseline figures are measured, on an Apple M3
-Pro. The training rows are deliberately empty rather than guessed, and get
-filled in once the runs have actually happened.
+What each run produces, measured on an Apple M3 Pro. Means are over the last
+fifty episodes.
 
 | Run | What it produces | Time |
 | --- | --- | --- |
 | `cartpole-random` | Mean reward 22.2 over 500 episodes, best 106. | Under a second |
 | `gridworld-random` | Reaches the goal in 97 of 300 episodes. Mean true reward 0.32, mean proxy reward 2.16. | Under a second |
-| `cartpole-v1` | **Awaiting Qasim's numbers.** | **Awaiting** |
-| `grid-true` | **Awaiting Qasim's numbers.** Should push the goal rate well above the random 97 in 300. | **Awaiting** |
-| `grid-proxy` | **Awaiting Qasim's numbers.** The result to look for is proxy reward climbing above the random 2.16 while true reward falls towards zero. | **Awaiting** |
+| `cartpole-v1` | Climbs from about 35 to a flat 500, which is the cap, by episode 350. Mean reward 500.0. | 22 seconds |
+| `grid-true` | Mean true reward 1.00, mean proxy 1.84. Reaches the goal in 50 of the last 50 episodes, in 12.9 steps on average. | 3 seconds |
+| `grid-proxy` | Mean true reward 0.00, mean proxy 2.18. Reaches the goal in 0 of the last 50 episodes and runs the full 50 step cap every time. | 3 seconds |
+
+`grid-proxy` is the Phase 2 result. Same environment and same algorithm as
+`grid-true`, with only the reward differing, and it collects more proxy reward
+than the agent that actually solves the task. A traced episode oscillates
+between (0,0) and (1,0), two cells from the start, and never gets closer than
+six steps to the goal.
 
 Running `sync.py` copies the runs into the site. `cd site && npm run dev` then
 serves it at http://localhost:3000.
