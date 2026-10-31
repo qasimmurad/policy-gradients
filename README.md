@@ -41,34 +41,24 @@ filled in once the runs have actually happened.
 Running `sync.py` copies the runs into the site. `cd site && npm run dev` then
 serves it at http://localhost:3000.
 
-## Division of labour
+## How the code is organised
 
-This matters more than anything else in this file.
+`rl/agent/` holds the learning algorithm and nothing else. The policy network,
+action sampling, returns, the REINFORCE loss and the training loop all live in
+one file, so the whole method can be read top to bottom without chasing imports.
 
-**Qasim writes the reinforcement learning.** The REINFORCE implementation, the
-policy network, the loss and the update rule live in `rl/agent/` and are written
-by hand, because every line has to be explainable in an interview. Nothing and
-nobody else writes in that directory.
-
-**Everything else is support.** The environments in `rl/envs/`, the helpers in
-`rl/tools/` and the website in `site/` exist to set up the experiments and make
-their results visible. They read what training produces and never take part in
-producing it.
-
-To say it plainly, because it matters for how this work should be read: the
-learning algorithm in `rl/agent/` was written by hand, and the environments,
-tooling and site were built with AI assistance. The professor approved that
-split explicitly. The boundary is checkable rather than a promise, because
-nothing inside `rl/agent/` is anything but Qasim's code, and the support
-functions that the training script leans on live in `rl/envs/` and `rl/tools/`
-for exactly that reason.
+Everything around it is support. The environments in `rl/envs/`, the helpers in
+`rl/tools/` and the website in `site/` set up the experiments and make the
+results visible. They read what training produces and never take part in
+producing it, which is why environment construction and the random baseline sit
+outside `rl/agent/` even though the training script calls both.
 
 ## Layout
 
 ```
 rl/
-  agent/           REINFORCE, policy network, training loop. Qasim writes this.
-    reinforce.py     Signatures and docstrings in place, bodies left to him.
+  agent/           The learning algorithm, and nothing else.
+    reinforce.py     Policy network, action sampling, returns, loss, training loop.
   envs/            CartPole comes from Gymnasium, the gridworld is ours.
     gridworld.py     5 by 5 grid with a true reward and a farmable proxy reward.
   tools/           Logging, weight export, run sync, random baseline. Support code.

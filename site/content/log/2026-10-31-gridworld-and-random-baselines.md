@@ -28,7 +28,20 @@ Baselines came next, uniform random policy, seed 0, because you can't interpret 
 
 Read those two gridworld numbers together. A random agent collects 2.16 proxy reward. An agent that walks straight in and finishes collects 1.80. Flailing beats competence under this proxy, before any policy has been trained, before any gradient has been taken. So the baseline isn't only a bar for the agent to clear later. It's the strongest evidence available that the reward is broken the way we wanted it broken, and it cost 300 random episodes to get. `_synthetic-example` and `make_synthetic_run.py` are deleted now there's real data to look at.
 
-Nothing trains yet, deliberately. `rl/agent/reinforce.py` has signatures, type hints and docstrings, and six `NotImplementedError` bodies waiting under `forward`, `select_action`, `discounted_returns`, `run_episode`, `reinforce_loss` and `train`. The environment, the reward arithmetic, the logging schema and the baselines all stand up on their own before a single parameter gets updated. If the reward function is wrong, a working training loop doesn't help you. It just produces a convincing curve faster.
+REINFORCE went in after that, and the runs land where the arithmetic said they would. `cartpole-v1` climbs from about 35 to a flat 500, which is the cap, by episode 350. That's 22 seconds on a laptop CPU, with the textbook objective, no baseline and no return normalisation. Worth noting because the loss docstring flags a baseline as the obvious next change and CartPole never needed one.
+
+The gridworld is the result worth having. Same environment, same algorithm, same hyperparameters. The only difference is which number the agent is handed.
+
+| run | mean true | mean proxy | reached the goal | mean episode length |
+| --- | --- | --- | --- | --- |
+| `grid-true` | 1.00 | 1.84 | 50 of 50 | 12.9 steps |
+| `grid-proxy` | 0.00 | 2.18 | 0 of 50 | 50.0 steps |
+
+Read the proxy row slowly. Zero goals in fifty episodes, and every one of those episodes ran the full 50 step cap. True reward 0.00, flat, fifty times in a row.
+
+What the policy actually learned is worse than the failure mode the environment was designed around, and I had the prediction wrong. The expectation was an agent that walks to the goal and paces beside it, declining to step on the square that ends its income. Trace a trained episode and it never goes near the goal at all. It oscillates between (0,0) and (1,0), two cells from where it spawns, and the closest it gets all episode is six steps away. The asymmetry doesn't care where you exploit it. Any adjacent pair of cells with one nearer the goal than the other pays +0.1 going and 0.01 coming back, so the policy farms the cheapest pair available, which is the one under its feet at reset. It never had to find the goal to learn that ignoring it pays.
+
+It also collects more proxy reward than the agent that actually solves the task, 2.18 against 1.84. Under the number it was given, hacking is not a degenerate corner. It is the correct answer, and the policy found it in 300 episodes.
 
 Tooling moved to match. `logger.log` now takes `true_reward`, `proxy_reward` and `episode_length`. Index entries from `sync.py` gained `reward_mode`, `baseline` and a `columns` map, so the site can tell which runs are comparable instead of guessing from the name. Summary floats are rounded to 6 decimal places, which sounds like fussiness. It isn't. Python 3.12 `sum()` uses compensated summation, so the unrounded values differed between 3.9 and 3.12, and the committed `index.json` drifted depending on which interpreter happened to run the sync. Continuous integration caught that one. Same shape as the reward bug, incidentally. A correct looking change, no error anywhere, and your artifacts quietly start depending on something you never meant them to depend on.
 

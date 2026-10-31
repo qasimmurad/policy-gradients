@@ -1,0 +1,13 @@
+{
+  "run_name": "cartpole-v1",
+  "created_at": "2026-10-31T17:08:33Z",
+  "env": "CartPole-v1",
+  "algorithm": "REINFORCE",
+  "baseline": false,
+  "episodes": 500,
+  "learning_rate": 0.01,
+  "gamma": 0.99,
+  "hidden_size": 64,
+  "optimizer": "Adam",
+  "seed": 0
+}
